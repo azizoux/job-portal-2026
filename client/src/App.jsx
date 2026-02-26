@@ -5,13 +5,14 @@ import ApplyJob from "./pages/ApplyJob";
 import Applications from "./pages/Applications";
 
 import { AppContext } from "./context/AppContext";
+import RecruiterLogin from "./components/RecruiterLogin";
 
 const App = () => {
-  const { searchFilter } = useContext(AppContext);
-  console.log({ searchFilter });
+  const { showRecruiterLogin } = useContext(AppContext);
 
   return (
     <div>
+      {showRecruiterLogin && <RecruiterLogin />}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/apply-job/:id" element={<ApplyJob />} />
