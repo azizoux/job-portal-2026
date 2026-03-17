@@ -37,6 +37,9 @@ const RecruiterLogin = () => {
           setCompanyData(data.company);
           setCompanyToken(data.token);
           localStorage.setItem("companyToken", data.token);
+          if (localStorage.getItem("userToken")) {
+            localStorage.removeItem("userToken");
+          }
           setShowRecruiterLogin(false);
           toast.success("Login success");
           navigate("/dashboard");
@@ -58,6 +61,9 @@ const RecruiterLogin = () => {
           setCompanyData(data.company);
           setCompanyToken(data.token);
           localStorage.setItem("companyToken", data.token);
+          if (localStorage.getItem("userToken")) {
+            localStorage.removeItem("userToken");
+          }
           setShowRecruiterLogin(false);
           toast.success("Register success");
           navigate("/dashboard");

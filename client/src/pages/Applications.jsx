@@ -1,23 +1,52 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import Navbar from "../components/Navbar";
-import { assets, jobsApplied } from "../assets/assets";
+import { assets } from "../assets/assets";
 import moment from "moment";
 import Footer from "../components/Footer";
+import { AppContext } from "../context/AppContext";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 const Applications = () => {
   const [isEdit, setIsEdit] = useState(false);
   const [resume, setResume] = useState(null);
+
+  const { backendUrl, userData, userApplications, fetchUserData, userToken } =
+    useContext(AppContext);
+
+  const updateResume = async () => {
+    try {
+      const formData = new FormData();
+      formData.append("resume", resume);
+
+      const { data } = await axios.post(
+        backendUrl + "/api/users/update-resume",
+        formData,
+        { headers: { Authorization: `Bearer ${userToken}` } },
+      );
+      if (data.success) {
+        toast.success(data.message);
+        await fetchUserData();
+      }
+    } catch (error) {
+      toast.error(error.message);
+      console.log(error.message);
+    }
+    setIsEdit(false);
+    setResume(null);
+  };
+
   return (
     <>
       <Navbar />
       <div className="container px-4 min-h-[65vh] 2xl:px-20 mx-auto my-10">
         <h2 className="text-xl font-semibold">Your Resume</h2>
         <div className="flex gap-2 mb-6 mt-3">
-          {isEdit ? (
+          {isEdit || (userData && !userData.resume) ? (
             <>
               <label className="flex items-center" htmlFor="resumeUpload">
                 <p className="bg-blue-100 hover:bg-blue-200 cursor-pointer text-blue-600 px-4 py-2 rounded-lg mr-2">
-                  Select Resume
+                  {resume ? resume.name : "Select Resume"}
                 </p>
                 <input
                   id="resumeUpload"
@@ -33,7 +62,7 @@ const Applications = () => {
                 />
               </label>
               <button
-                onClick={() => setIsEdit(false)}
+                onClick={updateResume}
                 className="bg-green-100 border border-green-400 hover:bg-green-200 text-gray-600 px-4 py-2 rounded-lg cursor-pointer"
               >
                 Save
@@ -78,18 +107,19 @@ const Applications = () => {
             </tr>
           </thead>
           <tbody>
-            {jobsApplied.map((job) =>
+            {userApplications?.map((job, index) =>
+              // eslint-disable-next-line no-constant-condition
               true ? (
-                <tr>
+                <tr key={index}>
                   <td className="py-3 px-4 flex items-center gap-2 border-b border-gray-300">
-                    <img className="w-8 h-8" src={job.logo} alt="" />
-                    {job.company}
+                    <img className="w-8 h-8" src={job.companyId.image} alt="" />
+                    {job.companyId.name}
                   </td>
                   <td className="py-2 px-4 border-b border-gray-300">
-                    {job.title}
+                    {job.jobId.title}
                   </td>
                   <td className="py-2 px-4 border-b border-gray-300 max-sm:hidden">
-                    {job.location}
+                    {job.jobId.location}
                   </td>
                   <td className="py-2 px-4 border-b border-gray-300 max-sm:hidden">
                     {moment(job.date).fromNow()}

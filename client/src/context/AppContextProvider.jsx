@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { AppContext } from "./AppContext";
-import { jobsData } from "../assets/assets";
 import { useUser } from "@clerk/clerk-react";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -21,9 +20,23 @@ export const AppContextProvider = ({ children }) => {
   const [companyToken, setCompanyToken] = useState(null);
   const [companyData, setCompanyData] = useState(null);
 
+  const [userData, setUserData] = useState(null);
+  const [userToken, setUserToken] = useState(null);
+  const [userApplications, setUserApplications] = useState([]);
+
   //Function to fetch jobs data
   const fetchJobs = async () => {
-    setJobs(jobsData);
+    try {
+      const { data } = await axios.get(backendUrl + "/api/jobs");
+      if (data.success) {
+        setJobs(data.jobs);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+      console.log(error.message);
+    }
   };
 
   // Function to fetch company data
@@ -34,33 +47,74 @@ export const AppContextProvider = ({ children }) => {
       });
       if (data.success) {
         setCompanyData(data.company);
-        console.log("CompanyData: ", data.company);
       } else {
         toast.error(data.message);
       }
     } catch (error) {
       toast.error(error.message);
-      console.log(error);
+      console.log(error.message);
     }
   };
 
-  const checkAndAddUser = async () => {
-    const response = await axios.post(backendUrl + "/api/users/check-user", {
-      name: user.fullName,
+  // Function to get user Token and Insert user in DB
+
+  const fetchUserToken = async () => {
+    const { data } = await axios.post(backendUrl + "/api/users/check-user", {
+      name: user?.fullName,
       email: user?.primaryEmailAddress?.emailAddress,
       image: user?.imageUrl,
     });
-    console.log("data:", response.data);
+    if (data.success) {
+      setUserToken(data.token);
+      localStorage.setItem("userToken", data.token);
+      if (localStorage.getItem("companyToken")) {
+        localStorage.removeItem("companyToken");
+      }
+    } else {
+      toast.error(data.message);
+    }
+  };
+
+  // Funtion to get user Data
+  const fetchUserData = async () => {
+    try {
+      if (userToken) {
+        const { data } = await axios.get(backendUrl + "/api/users/user", {
+          headers: { Authorization: `Bearer ${userToken}` },
+        });
+        if (data.success) {
+          setUserData(data.user);
+        } else {
+          toast.error(data.message);
+        }
+      }
+    } catch (error) {
+      toast.error(error.message);
+      console.error(error.message);
+    }
+  };
+
+  // Function to fetch user's applied applications data
+  const fetchUserApplications = async () => {
+    try {
+      const { data } = await axios.get(backendUrl + "/api/users/applications", {
+        headers: { Authorization: `Bearer ${userToken}` },
+      });
+      if (data.success) {
+        setUserApplications(data.applications);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
   };
 
   useEffect(() => {
-    if (user?.primaryEmailAddress?.emailAddress && user.fullName) {
-      console.log({
-        name: user.fullName,
-        email: user?.primaryEmailAddress?.emailAddress,
-        image: user?.imageUrl,
-      });
-      checkAndAddUser();
+    fetchUserToken();
+    if (user) {
+      fetchUserData();
+      fetchUserApplications();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
@@ -71,6 +125,12 @@ export const AppContextProvider = ({ children }) => {
     if (storedCompanyToken) {
       setCompanyToken(storedCompanyToken);
     }
+
+    const storedUserToken = localStorage.getItem("userToken");
+    if (storedUserToken) {
+      setUserToken(storedUserToken);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -94,6 +154,14 @@ export const AppContextProvider = ({ children }) => {
     setCompanyToken,
     companyData,
     setCompanyData,
+    userData,
+    setUserData,
+    userApplications,
+    setUserApplications,
+    userToken,
+    setUserToken,
+    fetchUserData,
+    fetchUserApplications,
   };
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };

@@ -1,11 +1,26 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { assets } from "../assets/assets";
 import { AppContext } from "../context/AppContext";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { companyData } = useContext(AppContext);
+  const { companyData, setCompanyData, setCompanyToken } =
+    useContext(AppContext);
+
+  // Function to logout for company
+  const logout = () => {
+    setCompanyData(null);
+    setCompanyToken(null);
+    localStorage.removeItem("companyToken");
+    navigate("/");
+  };
+
+  useEffect(() => {
+    if (companyData) {
+      navigate("/dashboard/manage-job");
+    }
+  }, [companyData]);
 
   return (
     <div className="min-h-screen">
@@ -32,7 +47,10 @@ const Dashboard = () => {
                     <li className="py-1 px-2 cursor-pointer pr-10 hover:bg-blue-100 hover:rounded">
                       Profile
                     </li>
-                    <li className="py-1 px-2 cursor-pointer pr-10 hover:bg-blue-100 hover:rounded">
+                    <li
+                      onClick={logout}
+                      className="py-1 px-2 cursor-pointer pr-10 hover:bg-blue-100 hover:rounded"
+                    >
                       Logout
                     </li>
                   </ul>

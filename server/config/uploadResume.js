@@ -1,0 +1,11 @@
+import multer from "multer";
+//Image storage engine
+const storage = multer.diskStorage({
+  destination: "resumes",
+  filename: (req, file, cb) => {
+    return cb(null, `${Date.now()}${file.originalname.replace(/\s+/g, "")}`);
+  },
+});
+const upload = multer({ storage: storage });
+
+export default upload;
