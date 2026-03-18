@@ -111,8 +111,8 @@ export const AppContextProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    fetchUserToken();
     if (user) {
+      fetchUserToken();
       fetchUserData();
       fetchUserApplications();
     }

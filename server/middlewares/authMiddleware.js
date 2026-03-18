@@ -13,7 +13,7 @@ export const protectCompany = async (req, res, next) => {
     req.companyId = decoded.id;
     next();
   } catch (error) {
-    console.log("Error in protectCompany Middleware...", error);
+    console.log("Error in protectCompany Middleware...", error.message);
     res.json({ success: false, message: error.message });
   }
 };

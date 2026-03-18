@@ -6,13 +6,20 @@ import Footer from "../components/Footer";
 import { AppContext } from "../context/AppContext";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { useEffect } from "react";
 
 const Applications = () => {
   const [isEdit, setIsEdit] = useState(false);
   const [resume, setResume] = useState(null);
 
-  const { backendUrl, userData, userApplications, fetchUserData, userToken } =
-    useContext(AppContext);
+  const {
+    backendUrl,
+    userData,
+    userApplications,
+    fetchUserData,
+    userToken,
+    fetchUserApplications,
+  } = useContext(AppContext);
 
   const updateResume = async () => {
     try {
@@ -36,6 +43,10 @@ const Applications = () => {
     setResume(null);
   };
 
+  useEffect(() => {
+    if (userData) fetchUserApplications();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userData]);
   return (
     <>
       <Navbar />
@@ -72,7 +83,8 @@ const Applications = () => {
             <div className="flex gap-2">
               <a
                 className="bg-blue-100 text-blue-600 px-4 py-2 rounded-lg"
-                href=""
+                href={userData?.resume}
+                target="_blank"
               >
                 Resume
               </a>

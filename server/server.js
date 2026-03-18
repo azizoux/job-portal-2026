@@ -23,6 +23,7 @@ await connectDB();
 
 // Server uploads folder
 app.use("/uploads", express.static("uploads"));
+app.use("/resumes", express.static("resumes"));
 
 // Routes
 app.get("/", (req, res) => {
